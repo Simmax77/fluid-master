@@ -30,7 +30,9 @@ var Simulator = (function () {
     function Simulator (wgl, onLoaded) {
         this.explode = false;
         this.explodeStrength = 1500.0;
-        this.vortex = false;
+        
+        // Physics tool sources: array of { pos: [x,y,z], type: int, dir: [x,y,z] }
+        this.sources = [];
         this.gravityY = -40.0;
 
         this.wgl = wgl;
@@ -425,7 +427,6 @@ var Simulator = (function () {
             .uniform1f('u_gravityY', this.gravityY)
             .uniform1i('u_explode', this.explode ? 1 : 0)
             .uniform1f('u_explodeStrength', this.explodeStrength)
-            .uniform1i('u_vortex', this.vortex ? 1 : 0)
             .uniform1f('u_timeStep', timeStep)
 
             .uniform3f('u_mouseVelocity', mouseVelocity[0], mouseVelocity[1], mouseVelocity[2])
@@ -433,9 +434,22 @@ var Simulator = (function () {
             .uniform3f('u_gridResolution', this.gridResolutionX, this.gridResolutionY, this.gridResolutionZ)
             .uniform3f('u_gridSize', this.gridWidth, this.gridHeight, this.gridDepth)
 
-            .uniform3f('u_mouseRayOrigin', mouseRayOrigin[0], mouseRayOrigin[1], mouseRayOrigin[2])
             .uniform3f('u_mouseRayDirection', mouseRayDirection[0], mouseRayDirection[1], mouseRayDirection[2])
-
+            
+        // Populate physics sources uniforms
+        addForceDrawState.uniform1i('u_numSources', this.sources.length);
+        for (var i = 0; i < 8; ++i) {
+            if (i < this.sources.length) {
+                var s = this.sources[i];
+                addForceDrawState.uniform3f('u_sourcePos[' + i + ']', s.pos[0], s.pos[1], s.pos[2]);
+                addForceDrawState.uniform1i('u_sourceType[' + i + ']', s.type);
+                addForceDrawState.uniform3f('u_sourceDir[' + i + ']', s.dir[0], s.dir[1], s.dir[2]);
+            } else {
+                addForceDrawState.uniform3f('u_sourcePos[' + i + ']', 0,0,0);
+                addForceDrawState.uniform1i('u_sourceType[' + i + ']', 0);
+                addForceDrawState.uniform3f('u_sourceDir[' + i + ']', 0,0,0);
+            }
+        }
 
         wgl.drawArrays(addForceDrawState, wgl.TRIANGLE_STRIP, 0, 4);
         this.explode = false;

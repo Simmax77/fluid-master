@@ -125,7 +125,7 @@ var FluidParticles = (function () {
             }).bind(this));
 
             this.explodeStrength = 1500.0;
-            this.explodeSlider = new Slider(document.getElementById('explode-slider'), this.explodeStrength, 100.0, 5000.0, (function (value) {
+            this.explodeSlider = new Slider(document.getElementById('explode-slider'), this.explodeStrength, 10.0, 30000.0, (function (value) {
                 this.explodeStrength = value;
                 this.simulatorRenderer.simulator.explodeStrength = value;
             }).bind(this));
@@ -137,30 +137,39 @@ var FluidParticles = (function () {
 
             this.colorPicker = document.getElementById('color-picker');
             this.explodeButton = document.getElementById('explode-button');
-            this.vortexButton = document.getElementById('vortex-button');
             this.gravityButton = document.getElementById('gravity-button');
+            
+            this.toolButtons = {
+                none: document.getElementById('tool-none-button'),
+                vortex: document.getElementById('tool-vortex-button'),
+                wind: document.getElementById('tool-wind-button'),
+                repel: document.getElementById('tool-repel-button'),
+                blackhole: document.getElementById('tool-blackhole-button')
+            };
+            this.clearSourcesButton = document.getElementById('clear-sources-button');
 
             this.gravityMode = 0; // 0: Normal, 1: Zero, 2: Reverse
-            this.vortexActive = false;
+            this.activeTool = 0; // 0: None, 1: Vortex, 2: Wind, 3: Repel, 4: BlackHole
+            this.toolTypes = { none: 0, vortex: 1, wind: 2, repel: 3, blackhole: 4 };
             
-            this.colorPicker.addEventListener('input', (function (event) {
-                var hex = event.target.value;
-                var r = parseInt(hex.substr(1, 2), 16) / 255.0;
-                var g = parseInt(hex.substr(3, 2), 16) / 255.0;
-                var b = parseInt(hex.substr(5, 2), 16) / 255.0;
-                this.simulatorRenderer.particleColor = [r, g, b];
-            }).bind(this));
-
-            this.colorPicker.dispatchEvent(new Event('input')); // Trigger initial parse
-
-            this.explodeButton.addEventListener('click', (function () {
-                this.simulatorRenderer.simulator.explode = true;
-            }).bind(this));
-
-            this.vortexButton.addEventListener('click', (function () {
-                this.vortexActive = !this.vortexActive;
-                this.vortexButton.textContent = "Vortex: " + (this.vortexActive ? "On" : "Off");
-                this.simulatorRenderer.simulator.vortex = this.vortexActive;
+            var setTool = (function(toolName) {
+                this.activeTool = this.toolTypes[toolName];
+                for (var key in this.toolButtons) {
+                    this.toolButtons[key].classList.remove('active-tool');
+                }
+                if (this.toolButtons[toolName]) {
+                    this.toolButtons[toolName].classList.add('active-tool');
+                }
+            }).bind(this);
+            
+            this.toolButtons.none.addEventListener('click', function() { setTool('none'); });
+            this.toolButtons.vortex.addEventListener('click', function() { setTool('vortex'); });
+            this.toolButtons.wind.addEventListener('click', function() { setTool('wind'); });
+            this.toolButtons.repel.addEventListener('click', function() { setTool('repel'); });
+            this.toolButtons.blackhole.addEventListener('click', function() { setTool('blackhole'); });
+            
+            this.clearSourcesButton.addEventListener('click', (function() {
+                this.simulatorRenderer.simulator.sources = [];
             }).bind(this));
 
             this.gravityButton.addEventListener('click', (function () {
@@ -242,10 +251,75 @@ var FluidParticles = (function () {
     FluidParticles.prototype.onMouseDown = function (event) {
         event.preventDefault();
 
+        // Check if we hit a UI element
+        var target = event.target;
+        if (target.closest('#ui') || target.closest('#top-bar')) {
+            return;
+        }
+
         if (this.state === State.EDITING) {
             this.boxEditor.onMouseDown(event);
         } else if (this.state === State.SIMULATING) {
             this.simulatorRenderer.onMouseDown(event);
+            
+            // If a tool is active, place a source on click
+            if (this.activeTool !== 0) {
+                var position = Utilities.getMousePosition(event, this.canvas);
+                var normalizedX = position.x / this.canvas.clientWidth;
+                var normalizedY = position.y / this.canvas.clientHeight;
+
+                var mouseX = normalizedX * 2.0 - 1.0;
+                var mouseY = (1.0 - normalizedY) * 2.0 - 1.0;
+                
+                var fov = 2.0 * Math.atan(1.0 / this.projectionMatrix[5]);
+                var viewSpaceMouseRay = [
+                    mouseX * Math.tan(fov / 2.0) * (this.canvas.width / this.canvas.height),
+                    mouseY * Math.tan(fov / 2.0),
+                    -1.0
+                ];
+                
+                var inverseViewMatrix = Utilities.invertMatrix([], this.camera.getViewMatrix());
+                var worldSpaceMouseRay = Utilities.transformDirectionByMatrix([], viewSpaceMouseRay, inverseViewMatrix);
+                Utilities.normalizeVector(worldSpaceMouseRay, worldSpaceMouseRay);
+                
+                var cameraPosition = this.camera.getPosition();
+                
+                // Intersect the ray with the plane parallel to XZ passing through the middle of the box (Y = GRID_HEIGHT / 2)
+                var planeY = GRID_HEIGHT / 2.0;
+                var t = (planeY - cameraPosition[1]) / worldSpaceMouseRay[1];
+                
+                // If it hits the plane...
+                if (t > 0) {
+                    var hitPos = [
+                        cameraPosition[0] + worldSpaceMouseRay[0] * t,
+                        cameraPosition[1] + worldSpaceMouseRay[1] * t,
+                        cameraPosition[2] + worldSpaceMouseRay[2] * t
+                    ];
+                    
+                    // Constrain somewhat to the grid bounds
+                    hitPos[0] = Math.max(-10, Math.min(GRID_WIDTH + 10, hitPos[0]));
+                    hitPos[2] = Math.max(-10, Math.min(GRID_DEPTH + 10, hitPos[2]));
+
+                    var dir = [1.0, 0.0, 0.0]; // Default right wind
+                    if (this.activeTool === 2) { 
+                        // For wind, let's randomly pick a direction along X or Z for flavor
+                        var angles = [0, Math.PI/2, Math.PI, 3*Math.PI/2];
+                        var angle = angles[Math.floor(Math.random() * angles.length)];
+                        dir = [Math.cos(angle), 0.0, Math.sin(angle)];
+                    }
+                    
+                    this.simulatorRenderer.simulator.sources.push({
+                        pos: hitPos,
+                        type: this.activeTool,
+                        dir: dir
+                    });
+
+                    // Keep a max of 8 sources running
+                    if (this.simulatorRenderer.simulator.sources.length > 8) {
+                        this.simulatorRenderer.simulator.sources.shift();
+                    }
+                }
+            }
         }
     };
 

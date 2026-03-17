@@ -56,6 +56,81 @@ canvas {
     transition: all 0.3s ease;
 }
 
+#top-bar {
+    position: absolute;
+    z-index: 10;
+    pointer-events: auto; /* Allow interactions within it */
+    top: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    
+    background: var(--dark-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 16px 24px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 24px;
+    transition: all 0.3s ease;
+}
+
+.top-bar-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+}
+
+.top-bar-label {
+    color: var(--text-dim);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.top-bar-tools {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+}
+
+.top-bar-divider {
+    width: 1px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.top-btn {
+    padding: 8px 16px;
+    white-space: nowrap;
+}
+
+.active-tool {
+    background: var(--accent-color) !important;
+    color: #fff !important;
+    border-color: var(--accent-hover) !important;
+}
+
+.danger-btn {
+    background: rgba(255, 59, 48, 0.1) !important;
+    border-color: rgba(255, 59, 48, 0.3) !important;
+    color: #ff453a !important;
+}
+
+.danger-btn:hover {
+    background: rgba(255, 59, 48, 0.2) !important;
+}
+
+#top-bar .slider {
+    width: 160px;
+}
+
 #start-button {
     font-size: 14px;
     font-weight: 600;
