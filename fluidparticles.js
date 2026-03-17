@@ -253,7 +253,7 @@ var FluidParticles = (function () {
 
         // Check if we hit a UI element
         var target = event.target;
-        if (target.closest('#ui') || target.closest('#top-bar')) {
+        if (target.closest('#ui') || target.closest('#right-bar')) {
             return;
         }
 
@@ -302,10 +302,15 @@ var FluidParticles = (function () {
 
                     var dir = [1.0, 0.0, 0.0]; // Default right wind
                     if (this.activeTool === 2) { 
-                        // For wind, let's randomly pick a direction along X or Z for flavor
-                        var angles = [0, Math.PI/2, Math.PI, 3*Math.PI/2];
-                        var angle = angles[Math.floor(Math.random() * angles.length)];
-                        dir = [Math.cos(angle), 0.0, Math.sin(angle)];
+                        // Wind blows away from the camera
+                        dir = [worldSpaceMouseRay[0], 0.0, worldSpaceMouseRay[2]];
+                        var len = Math.sqrt(dir[0]*dir[0] + dir[2]*dir[2]);
+                        if (len > 0.001) {
+                            dir[0] /= len;
+                            dir[2] /= len;
+                        } else {
+                            dir = [1.0, 0.0, 0.0];
+                        }
                     }
                     
                     this.simulatorRenderer.simulator.sources.push({
