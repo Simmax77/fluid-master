@@ -428,12 +428,14 @@ var Simulator = (function () {
             .uniform1i('u_explode', this.explode ? 1 : 0)
             .uniform1f('u_explodeStrength', this.explodeStrength)
             .uniform1f('u_timeStep', timeStep)
+            .uniform1f('u_frameNumber', this.frameNumber)
 
             .uniform3f('u_mouseVelocity', mouseVelocity[0], mouseVelocity[1], mouseVelocity[2])
 
             .uniform3f('u_gridResolution', this.gridResolutionX, this.gridResolutionY, this.gridResolutionZ)
             .uniform3f('u_gridSize', this.gridWidth, this.gridHeight, this.gridDepth)
 
+            .uniform3f('u_mouseRayOrigin', mouseRayOrigin[0], mouseRayOrigin[1], mouseRayOrigin[2])
             .uniform3f('u_mouseRayDirection', mouseRayDirection[0], mouseRayDirection[1], mouseRayDirection[2])
             
         // Populate physics sources uniforms

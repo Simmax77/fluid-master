@@ -138,19 +138,36 @@ var FluidParticles = (function () {
             this.colorPicker = document.getElementById('color-picker');
             this.explodeButton = document.getElementById('explode-button');
             this.gravityButton = document.getElementById('gravity-button');
+
+            // Wire up color picker to update fluid color in real-time
+            this.colorPicker.addEventListener('input', (function (e) {
+                var hex = e.target.value;
+                var r = parseInt(hex.substring(1, 3), 16) / 255.0;
+                var g = parseInt(hex.substring(3, 5), 16) / 255.0;
+                var b = parseInt(hex.substring(5, 7), 16) / 255.0;
+                this.simulatorRenderer.particleColor = [r, g, b];
+            }).bind(this));
+
+            // Wire up explode button
+            this.explodeButton.addEventListener('click', (function () {
+                this.simulatorRenderer.simulator.explode = true;
+            }).bind(this));
             
             this.toolButtons = {
                 none: document.getElementById('tool-none-button'),
                 vortex: document.getElementById('tool-vortex-button'),
                 wind: document.getElementById('tool-wind-button'),
                 repel: document.getElementById('tool-repel-button'),
-                blackhole: document.getElementById('tool-blackhole-button')
+                blackhole: document.getElementById('tool-blackhole-button'),
+                fountain: document.getElementById('tool-fountain-button'),
+                turbulence: document.getElementById('tool-turbulence-button'),
+                wave: document.getElementById('tool-wave-button')
             };
             this.clearSourcesButton = document.getElementById('clear-sources-button');
 
             this.gravityMode = 0; // 0: Normal, 1: Zero, 2: Reverse
-            this.activeTool = 0; // 0: None, 1: Vortex, 2: Wind, 3: Repel, 4: BlackHole
-            this.toolTypes = { none: 0, vortex: 1, wind: 2, repel: 3, blackhole: 4 };
+            this.activeTool = 0; // 0: None, 1: Vortex, 2: Wind, 3: Repel, 4: BlackHole, 5: Fountain, 6: Turbulence, 7: Wave
+            this.toolTypes = { none: 0, vortex: 1, wind: 2, repel: 3, blackhole: 4, fountain: 5, turbulence: 6, wave: 7 };
             
             var setTool = (function(toolName) {
                 this.activeTool = this.toolTypes[toolName];
@@ -167,6 +184,9 @@ var FluidParticles = (function () {
             this.toolButtons.wind.addEventListener('click', function() { setTool('wind'); });
             this.toolButtons.repel.addEventListener('click', function() { setTool('repel'); });
             this.toolButtons.blackhole.addEventListener('click', function() { setTool('blackhole'); });
+            this.toolButtons.fountain.addEventListener('click', function() { setTool('fountain'); });
+            this.toolButtons.turbulence.addEventListener('click', function() { setTool('turbulence'); });
+            this.toolButtons.wave.addEventListener('click', function() { setTool('wave'); });
             
             this.clearSourcesButton.addEventListener('click', (function() {
                 this.simulatorRenderer.simulator.sources = [];
@@ -260,7 +280,10 @@ var FluidParticles = (function () {
         if (this.state === State.EDITING) {
             this.boxEditor.onMouseDown(event);
         } else if (this.state === State.SIMULATING) {
-            this.simulatorRenderer.onMouseDown(event);
+            // Only allow camera rotation when no tool is active
+            if (this.activeTool === 0) {
+                this.simulatorRenderer.onMouseDown(event);
+            }
             
             // If a tool is active, place a source on click
             if (this.activeTool !== 0) {
@@ -296,9 +319,9 @@ var FluidParticles = (function () {
                         cameraPosition[2] + worldSpaceMouseRay[2] * t
                     ];
                     
-                    // Constrain somewhat to the grid bounds
-                    hitPos[0] = Math.max(-10, Math.min(GRID_WIDTH + 10, hitPos[0]));
-                    hitPos[2] = Math.max(-10, Math.min(GRID_DEPTH + 10, hitPos[2]));
+                    // Constrain to the grid bounds
+                    hitPos[0] = Math.max(0, Math.min(GRID_WIDTH, hitPos[0]));
+                    hitPos[2] = Math.max(0, Math.min(GRID_DEPTH, hitPos[2]));
 
                     var dir = [1.0, 0.0, 0.0]; // Default right wind
                     if (this.activeTool === 2) { 
