@@ -446,10 +446,12 @@ var Simulator = (function () {
                 addForceDrawState.uniform3f('u_sourcePos[' + i + ']', s.pos[0], s.pos[1], s.pos[2]);
                 addForceDrawState.uniform1i('u_sourceType[' + i + ']', s.type);
                 addForceDrawState.uniform3f('u_sourceDir[' + i + ']', s.dir[0], s.dir[1], s.dir[2]);
+                addForceDrawState.uniform1f('u_sourceStrength[' + i + ']', s.strength || 1.0);
             } else {
                 addForceDrawState.uniform3f('u_sourcePos[' + i + ']', 0,0,0);
                 addForceDrawState.uniform1i('u_sourceType[' + i + ']', 0);
                 addForceDrawState.uniform3f('u_sourceDir[' + i + ']', 0,0,0);
+                addForceDrawState.uniform1f('u_sourceStrength[' + i + ']', 1.0);
             }
         }
 

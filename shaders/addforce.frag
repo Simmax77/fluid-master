@@ -20,8 +20,9 @@ uniform float u_frameNumber;
 
 uniform int u_numSources;
 uniform vec3 u_sourcePos[8];
-uniform int u_sourceType[8]; // 1: Vortex, 2: Wind, 3: Repel, 4: Black Hole, 5: Fountain, 6: Turbulence, 7: Wave
+uniform int u_sourceType[8]; // 1: Vortex, 2: Wind, 3: Repel, 4: Black Hole, 5: Fountain, 6: Turbulence, 7: Wave, 8: Magnet
 uniform vec3 u_sourceDir[8]; // Used by directional sources like Wind
+uniform float u_sourceStrength[8]; // Per-source strength multiplier
 
 
 float kernel (vec3 position, float radius) {
@@ -102,24 +103,21 @@ void main () {
 
         int type = u_sourceType[i];
         vec3 dir = u_sourceDir[i];
+        float strength = u_sourceStrength[i];
 
         if (type == 1) {
             // ========== VORTEX (Rankine-style) ==========
-            // Strong tangential velocity near core, decaying outward
-            // Downward suction in the center (funnel effect)
             float coreRadius = 3.0;
             float maxRadius = 18.0;
-            float tangentialStrength = 1800.0;
-            float suctionStrength = 600.0;
-            float inwardStrength = 400.0;
+            float tangentialStrength = 1800.0 * strength;
+            float suctionStrength = 600.0 * strength;
+            float inwardStrength = 400.0 * strength;
 
-            // X component
             float dx_x = xPosition.x - center.x;
             float dz_x = xPosition.z - center.z;
             float dist_x = length(vec2(dx_x, dz_x));
             float dY_x = abs(xPosition.y - center.y);
             float yFalloff_x = smoothstep(maxRadius, 0.0, dY_x);
-            // Rankine: linear inside core, 1/r outside
             float tangScale_x = dist_x < coreRadius 
                 ? dist_x / coreRadius 
                 : coreRadius / max(dist_x, 0.01);
@@ -128,7 +126,6 @@ void main () {
             vec2 inward_x = dist_x > 0.01 ? normalize(vec2(-dx_x, -dz_x)) : vec2(0.0);
             float forceX = (tang_x.x * tangentialStrength * tangScale_x + inward_x.x * inwardStrength * radialFalloff_x) * yFalloff_x;
 
-            // Y component (suction downward in center)
             float dx_y = yPosition.x - center.x;
             float dz_y = yPosition.z - center.z;
             float dist_y = length(vec2(dx_y, dz_y));
@@ -137,7 +134,6 @@ void main () {
             float suctionFalloff = smoothstep(maxRadius * 0.5, 0.0, dist_y);
             float forceY = -suctionStrength * suctionFalloff * yFalloff_y;
 
-            // Z component
             float dx_z = zPosition.x - center.x;
             float dz_z = zPosition.z - center.z;
             float dist_z = length(vec2(dx_z, dz_z));
@@ -155,31 +151,26 @@ void main () {
 
         } else if (type == 2) {
             // ========== WIND (realistic directional with turbulence) ==========
-            // Cone-shaped spread with turbulent fluctuations
             float windRadius = 12.0;
-            float coneAngle = 0.4; // radians, spread angle
-            float baseForce = 3000.0;
+            float coneAngle = 0.4;
+            float baseForce = 3000.0 * strength;
 
             vec3 toX = xPosition - center;
             vec3 toY = yPosition - center;
             vec3 toZ = zPosition - center;
 
-            // Project distance along wind direction for cone falloff
             float projX = dot(toX, dir);
             float projY = dot(toY, dir);
             float projZ = dot(toZ, dir);
 
-            // Perpendicular distance from wind axis
             vec3 perpX = toX - dir * projX;
             vec3 perpY = toY - dir * projY;
             vec3 perpZ = toZ - dir * projZ;
 
-            // Cone radius increases along wind direction
             float coneRadX = max(2.0, abs(projX) * coneAngle + 2.0);
             float coneRadY = max(2.0, abs(projY) * coneAngle + 2.0);
             float coneRadZ = max(2.0, abs(projZ) * coneAngle + 2.0);
 
-            // Only apply force in downstream direction
             float downstreamX = smoothstep(-1.0, 1.0, projX);
             float downstreamY = smoothstep(-1.0, 1.0, projY);
             float downstreamZ = smoothstep(-1.0, 1.0, projZ);
@@ -188,7 +179,6 @@ void main () {
             float falloffY = smoothstep(coneRadY, 0.0, length(perpY)) * smoothstep(windRadius * 2.0, 0.0, abs(projY)) * downstreamY;
             float falloffZ = smoothstep(coneRadZ, 0.0, length(perpZ)) * smoothstep(windRadius * 2.0, 0.0, abs(projZ)) * downstreamZ;
 
-            // Add turbulent fluctuation
             float turbX = (noise3D(xPosition * 0.3 + time * 2.0) - 0.5) * 0.3;
             float turbY = (noise3D(yPosition * 0.3 + time * 2.0 + 100.0) - 0.5) * 0.3;
             float turbZ = (noise3D(zPosition * 0.3 + time * 2.0 + 200.0) - 0.5) * 0.3;
@@ -200,7 +190,7 @@ void main () {
         } else if (type == 3) {
             // ========== REPEL (smooth radial force field) ==========
             float repelRadius = 15.0;
-            float force = 5000.0;
+            float force = 5000.0 * strength;
 
             vec3 dX = xPosition - center;
             vec3 dY = yPosition - center;
@@ -210,7 +200,6 @@ void main () {
             float lenY = length(dY);
             float lenZ = length(dZ);
 
-            // 1/r-style falloff clamped with smoothstep for smooth edge
             float falloffX = smoothstep(repelRadius, 0.0, lenX) * (1.0 / max(lenX * 0.3, 0.5));
             float falloffY = smoothstep(repelRadius, 0.0, lenY) * (1.0 / max(lenY * 0.3, 0.5));
             float falloffZ = smoothstep(repelRadius, 0.0, lenZ) * (1.0 / max(lenZ * 0.3, 0.5));
@@ -224,8 +213,8 @@ void main () {
         } else if (type == 4) {
             // ========== BLACK HOLE (gravitational attraction + orbital) ==========
             float suckRadius = 25.0;
-            float gravitationalForce = 4000.0;
-            float orbitalForce = 1200.0;
+            float gravitationalForce = 4000.0 * strength;
+            float orbitalForce = 1200.0 * strength;
 
             vec3 dX = center - xPosition;
             vec3 dY = center - yPosition;
@@ -235,17 +224,14 @@ void main () {
             float lenY = length(dY);
             float lenZ = length(dZ);
 
-            // Gravitational 1/r² style with smooth edge
             float gravX = smoothstep(suckRadius, 0.0, lenX) * (1.0 / max(lenX * lenX * 0.02, 0.3));
             float gravY = smoothstep(suckRadius, 0.0, lenY) * (1.0 / max(lenY * lenY * 0.02, 0.3));
             float gravZ = smoothstep(suckRadius, 0.0, lenZ) * (1.0 / max(lenZ * lenZ * 0.02, 0.3));
 
-            // Radial attraction
             float radialX = lenX > 0.01 ? normalize(dX).x * gravitationalForce * gravX : 0.0;
             float radialY = lenY > 0.01 ? normalize(dY).y * gravitationalForce * gravY : 0.0;
             float radialZ = lenZ > 0.01 ? normalize(dZ).z * gravitationalForce * gravZ : 0.0;
 
-            // Add orbital/tangential component (XZ plane)
             float dx_orb = xPosition.x - center.x;
             float dz_orb = xPosition.z - center.z;
             float dist_orb = length(vec2(dx_orb, dz_orb));
@@ -268,35 +254,29 @@ void main () {
             // ========== FOUNTAIN / GEYSER (powerful upward column) ==========
             float columnRadius = 4.0;
             float effectHeight = 20.0;
-            float upForce = 6000.0;
-            float spreadForce = 800.0;
+            float upForce = 6000.0 * strength;
+            float spreadForce = 800.0 * strength;
 
-            // Cylindrical distance from the center axis (XZ plane)
             float dx_x = xPosition.x - center.x;
             float dz_x = xPosition.z - center.z;
             float cylDist_x = length(vec2(dx_x, dz_x));
             float heightAbove_x = xPosition.y - center.y;
             float columnFalloff_x = smoothstep(columnRadius, 0.0, cylDist_x);
-            // Spread increases with height
             float spreadRadius = columnRadius + max(0.0, heightAbove_x) * 0.5;
             float spreadFalloff_x = smoothstep(spreadRadius, 0.0, cylDist_x);
             float heightFalloff_x = smoothstep(effectHeight, 0.0, abs(heightAbove_x));
-            // Radial spread (push outward as it goes up)
             float spreadAmt = smoothstep(0.0, effectHeight * 0.5, heightAbove_x) * spreadFalloff_x;
             float forceX = (cylDist_x > 0.01 ? (dx_x / cylDist_x) * spreadForce * spreadAmt : 0.0);
 
-            // Y: strong upward force in the column
             float dx_y = yPosition.x - center.x;
             float dz_y = yPosition.z - center.z;
             float cylDist_y = length(vec2(dx_y, dz_y));
             float columnFalloff_y = smoothstep(columnRadius, 0.0, cylDist_y);
             float heightAbove_y = yPosition.y - center.y;
             float heightFalloff_y = smoothstep(effectHeight, 0.0, abs(heightAbove_y));
-            // Upward force, strongest at the base
             float upFalloff = smoothstep(effectHeight, 0.0, max(0.0, heightAbove_y));
             float forceY = upForce * columnFalloff_y * upFalloff;
 
-            // Z spread
             float dx_z = zPosition.x - center.x;
             float dz_z = zPosition.z - center.z;
             float cylDist_z = length(vec2(dx_z, dz_z));
@@ -311,7 +291,7 @@ void main () {
         } else if (type == 6) {
             // ========== TURBULENCE (chaotic random forces) ==========
             float turbRadius = 15.0;
-            float turbForce = 3500.0;
+            float turbForce = 3500.0 * strength;
             float noiseScale = 0.25;
             float timeScale = 3.0;
 
@@ -323,12 +303,10 @@ void main () {
             float falloffY = smoothstep(turbRadius, 0.0, distY);
             float falloffZ = smoothstep(turbRadius, 0.0, distZ);
 
-            // Generate 3 independent noise values for direction
             float nX = noise3D(xPosition * noiseScale + vec3(time * timeScale, 0.0, 0.0)) - 0.5;
             float nY = noise3D(yPosition * noiseScale + vec3(0.0, time * timeScale + 50.0, 0.0)) - 0.5;
             float nZ = noise3D(zPosition * noiseScale + vec3(0.0, 0.0, time * timeScale + 100.0)) - 0.5;
 
-            // Add curl-like component for swirling motion
             float curlX = noise3D(xPosition * noiseScale * 0.5 + vec3(0.0, time * timeScale * 0.7, 37.0)) - 0.5;
             float curlY = noise3D(yPosition * noiseScale * 0.5 + vec3(time * timeScale * 0.7, 0.0, 73.0)) - 0.5;
             float curlZ = noise3D(zPosition * noiseScale * 0.5 + vec3(91.0, time * timeScale * 0.7, 0.0)) - 0.5;
@@ -342,12 +320,11 @@ void main () {
         } else if (type == 7) {
             // ========== WAVE GENERATOR (periodic sinusoidal ripples) ==========
             float waveRadius = 20.0;
-            float waveForce = 2500.0;
-            float frequency = 4.0;  // oscillations per second
-            float waveSpeed = 8.0;  // propagation speed in grid units
+            float waveForce = 2500.0 * strength;
+            float frequency = 4.0;
+            float waveSpeed = 8.0;
             float wavelength = waveSpeed / frequency;
 
-            // For each component, compute radial distance and create propagating wave
             float distX = length(xPosition - center);
             float distY = length(yPosition - center);
             float distZ = length(zPosition - center);
@@ -356,7 +333,6 @@ void main () {
             float falloffY = smoothstep(waveRadius, 0.0, distY);
             float falloffZ = smoothstep(waveRadius, 0.0, distZ);
 
-            // Propagating concentric wave: sin(k*r - omega*t)
             float omega = 2.0 * 3.14159 * frequency;
             float k = 2.0 * 3.14159 / wavelength;
 
@@ -364,15 +340,43 @@ void main () {
             float waveY = sin(k * distY - omega * time);
             float waveZ = sin(k * distZ - omega * time);
 
-            // Radial force direction (outward)
             vec3 radDirX = distX > 0.01 ? normalize(xPosition - center) : vec3(0.0);
             vec3 radDirY = distY > 0.01 ? normalize(yPosition - center) : vec3(0.0);
             vec3 radDirZ = distZ > 0.01 ? normalize(zPosition - center) : vec3(0.0);
 
-            // Apply wave force as radial pulses + vertical displacement
-            newVelocity.x += (radDirX.x * waveX * waveForce * falloffX + waveY * 500.0 * falloffY * 0.0) * u_timeStep;
+            newVelocity.x += (radDirX.x * waveX * waveForce * falloffX) * u_timeStep;
             newVelocity.y += waveY * waveForce * 0.6 * falloffY * u_timeStep;
             newVelocity.z += (radDirZ.z * waveZ * waveForce * falloffZ) * u_timeStep;
+
+        } else if (type == 8) {
+            // ========== MAGNET (gentle radial attraction, no orbital) ==========
+            // Softer than black hole, purely radial inward pull with smooth falloff
+            float magnetRadius = 20.0;
+            float magnetForce = 2500.0 * strength;
+
+            vec3 dX = center - xPosition;
+            vec3 dY = center - yPosition;
+            vec3 dZ = center - zPosition;
+
+            float lenX = length(dX);
+            float lenY = length(dY);
+            float lenZ = length(dZ);
+
+            // Smooth cubic falloff for gentle attraction
+            float falloffX = smoothstep(magnetRadius, 0.0, lenX);
+            float falloffY = smoothstep(magnetRadius, 0.0, lenY);
+            float falloffZ = smoothstep(magnetRadius, 0.0, lenZ);
+
+            // Gentle 1/r with floor to prevent singularity
+            float scaleX = 1.0 / max(lenX * 0.15, 0.8);
+            float scaleY = 1.0 / max(lenY * 0.15, 0.8);
+            float scaleZ = 1.0 / max(lenZ * 0.15, 0.8);
+
+            newVelocity += vec3(
+                lenX > 0.01 ? normalize(dX).x * magnetForce * falloffX * scaleX : 0.0,
+                lenY > 0.01 ? normalize(dY).y * magnetForce * falloffY * scaleY : 0.0,
+                lenZ > 0.01 ? normalize(dZ).z * magnetForce * falloffZ * scaleZ : 0.0
+            ) * u_timeStep;
         }
     }
 

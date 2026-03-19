@@ -23,6 +23,7 @@
             </style>
 
             <canvas id="canvas" width="1920" height="1080"></canvas>
+            <canvas id="overlay-canvas" class="simulating-ui"></canvas>
             
             <div id="ui">
                 <div id="start-button">Start</div>
@@ -45,7 +46,6 @@
 
                 <div class="control-row simulating-ui">
                     <button id="gravity-button" class="action-btn">Gravity: Normal</button>
-                    <!-- Explode and Vortex moved to Top Bar -->
                 </div>
             </div>
 
@@ -54,29 +54,37 @@
                 <div class="right-bar-section">
                     <div class="right-bar-label">Explode Force</div>
                     <div id="explode-slider" class="slider"></div>
-                    <button id="explode-button" class="action-btn right-btn">Explode!</button>
+                    <button id="explode-button" class="action-btn right-btn">💥 Explode!</button>
                 </div>
                 
                 <div class="right-bar-divider"></div>
                 
                 <div class="right-bar-section">
-                    <div class="right-bar-label">Placeable Tools</div>
+                    <div class="right-bar-label">Placeable Tools <span id="source-count-badge" class="source-badge">0</span></div>
                     <div class="right-bar-tools">
-                        <button id="tool-none-button" class="action-btn right-btn active-tool">None</button>
-                        <button id="tool-vortex-button" class="action-btn right-btn">Vortex</button>
-                        <button id="tool-wind-button" class="action-btn right-btn">Wind</button>
-                        <button id="tool-repel-button" class="action-btn right-btn">Repel</button>
-                        <button id="tool-blackhole-button" class="action-btn right-btn">Black Hole</button>
-                        <button id="tool-fountain-button" class="action-btn right-btn">Fountain</button>
-                        <button id="tool-turbulence-button" class="action-btn right-btn">Turbulence</button>
-                        <button id="tool-wave-button" class="action-btn right-btn">Wave</button>
+                        <button id="tool-none-button" class="action-btn right-btn active-tool" data-tooltip="Select / Delete sources">🚫 None</button>
+                        <button id="tool-vortex-button" class="action-btn right-btn" data-tooltip="Creates a swirling vortex that pulls particles inward">🌀 Vortex</button>
+                        <button id="tool-wind-button" class="action-btn right-btn" data-tooltip="Click & drag to set wind direction. Blows particles along a cone">💨 Wind</button>
+                        <button id="tool-repel-button" class="action-btn right-btn" data-tooltip="Pushes particles away from the source">🔵 Repel</button>
+                        <button id="tool-blackhole-button" class="action-btn right-btn" data-tooltip="Sucks in particles with gravitational & orbital forces">🕳️ Black Hole</button>
+                        <button id="tool-fountain-button" class="action-btn right-btn" data-tooltip="Shoots particles upward in a column">⛲ Fountain</button>
+                        <button id="tool-turbulence-button" class="action-btn right-btn" data-tooltip="Creates chaotic, swirling random forces">🌊 Turbulence</button>
+                        <button id="tool-wave-button" class="action-btn right-btn" data-tooltip="Generates concentric wave pulses">〰️ Wave</button>
+                        <button id="tool-magnet-button" class="action-btn right-btn" data-tooltip="Gently attracts nearby particles — softer than black hole">🧲 Magnet</button>
                     </div>
                 </div>
 
                 <div class="right-bar-divider"></div>
 
                 <div class="right-bar-section">
-                    <button id="clear-sources-button" class="action-btn right-btn danger-btn">Clear Sources</button>
+                    <div class="right-bar-label">Tool Strength</div>
+                    <div id="strength-slider" class="slider"></div>
+                </div>
+
+                <div class="right-bar-divider"></div>
+
+                <div class="right-bar-section">
+                    <button id="clear-sources-button" class="action-btn right-btn danger-btn">🗑️ Clear All Sources</button>
                 </div>
             </div>
             </div>
@@ -94,7 +102,10 @@
             <div class="instructions simulating-ui">
                 <span>Drag</span> to rotate camera<br/>
                 <span>Scroll</span> to zoom in and out <br/>
-                <span>Move mouse</span> to push particles
+                <span>Move mouse</span> to push particles<br/>
+                <span>Click</span> to place selected tool<br/>
+                <span>Wind tool:</span> click & drag to set direction<br/>
+                <span>None tool + click source</span> to delete it
             </div>
 
             <div id="footer">
@@ -160,5 +171,6 @@
             );
         </script>
     </body>
+
 
 </html>

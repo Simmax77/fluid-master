@@ -34,6 +34,16 @@ canvas {
     z-index: 1;
 }
 
+#overlay-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 5;
+    pointer-events: none;
+    width: 100%;
+    height: 100%;
+}
+
 #ui {
     position: absolute;
     z-index: 10;
@@ -59,7 +69,7 @@ canvas {
 #right-bar {
     position: absolute;
     z-index: 10;
-    pointer-events: auto; /* Allow interactions within it */
+    pointer-events: auto;
     top: 50%;
     right: 32px;
     transform: translateY(-50%);
@@ -77,6 +87,20 @@ canvas {
     align-items: stretch;
     gap: 24px;
     transition: all 0.3s ease;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Scrollbar styling for right-bar */
+#right-bar::-webkit-scrollbar {
+    width: 4px;
+}
+#right-bar::-webkit-scrollbar-track {
+    background: transparent;
+}
+#right-bar::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.15);
+    border-radius: 2px;
 }
 
 .right-bar-section {
@@ -94,12 +118,16 @@ canvas {
     letter-spacing: 0.5px;
     text-transform: uppercase;
     text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
 .right-bar-tools {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
     width: 100%;
 }
 
@@ -115,6 +143,42 @@ canvas {
     width: 100%;
     text-align: center;
     font-size: 13px;
+    position: relative;
+}
+
+/* Tooltip */
+.right-btn[data-tooltip] {
+    position: relative;
+}
+
+.right-btn[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    right: calc(100% + 12px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(10, 10, 12, 0.95);
+    backdrop-filter: blur(12px);
+    color: var(--text-main);
+    font-size: 11px;
+    font-weight: 400;
+    padding: 8px 12px;
+    border-radius: 8px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    z-index: 100;
+    max-width: 220px;
+    white-space: normal;
+    text-align: left;
+    line-height: 1.4;
+}
+
+.right-btn[data-tooltip]:hover::after {
+    opacity: 1;
 }
 
 .active-tool {
@@ -132,6 +196,29 @@ canvas {
 
 .danger-btn:hover {
     background: rgba(255, 59, 48, 0.2) !important;
+}
+
+/* Source count badge */
+.source-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    background: var(--accent-color);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 0 5px;
+    letter-spacing: 0;
+    text-transform: none;
+    transition: all 0.3s ease;
+}
+
+.source-badge.empty {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-dim);
 }
 
 #right-bar .slider {
@@ -356,4 +443,11 @@ input[type="color"]::-webkit-color-swatch {
 
 #linkback a {
     color: var(--accent-color);
+}
+
+/* Wind direction drag indicator */
+.wind-drag-line {
+    position: absolute;
+    z-index: 6;
+    pointer-events: none;
 }
