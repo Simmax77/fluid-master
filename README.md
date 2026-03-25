@@ -80,5 +80,5 @@ Since this is a static WebGL project, you don't need any complex installation.
 *   **Simulation Algorithm:** Particle-based fluid dynamics (PBF-inspired).
 
 ---
-
+*   Inspired by David Li's fluid simulation: https://david.li/fluid, but with more tools and features.
 *Enjoy the flow! 🌊*
