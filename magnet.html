@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Magnetic Field - Particle Lab</title>
+        <meta name="description" content="3D magnetic field simulation with iron filing particles and placeable horseshoe magnets using WebGL.">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="magnet.css"/>
+    </head>
+
+    <body>
+        <script type="text/template" id="main">
+            <canvas id="canvas" width="1920" height="1080"></canvas>
+            <canvas id="overlay-canvas"></canvas>
+
+            <div id="ui">
+                <a href="index.html" id="back-button">← Menu</a>
+
+                <div class="slider-label field-label">Field Strength</div>
+                <div id="field-strength-slider" class="slider"></div>
+
+                <div class="slider-label">Color</div>
+                <input type="color" id="color-picker" value="#474752">
+
+                <div class="slider-label">Particle Size</div>
+                <div id="size-slider" class="slider"></div>
+
+                <div class="control-row">
+                    <button id="reset-button" class="action-btn">↻ Reset</button>
+                </div>
+            </div>
+
+            <!-- Magnet Tools Right Bar -->
+            <div id="right-bar">
+                <div class="right-bar-section">
+                    <div class="right-bar-label">Magnets <span id="magnet-count-badge" class="source-badge empty">0</span></div>
+                    <div class="right-bar-tools">
+                        <button id="tool-none-button" class="action-btn right-btn active-tool" data-tooltip="Select / Delete magnets">🚫 None</button>
+                        <button id="tool-horseshoe-button" class="action-btn right-btn" data-tooltip="Place a bar magnet — creates N/S poles with magnetic field lines">🧲 Bar Magnet</button>
+                    </div>
+                </div>
+
+                <div class="right-bar-divider"></div>
+
+                <div class="right-bar-section">
+                    <div class="right-bar-label">Magnet Size</div>
+                    <div id="magnet-size-slider" class="slider"></div>
+                </div>
+
+                <div class="right-bar-divider"></div>
+
+                <div class="right-bar-section">
+                    <button id="clear-magnets-button" class="action-btn right-btn danger-btn">🗑️ Clear All Magnets</button>
+                </div>
+            </div>
+
+            <div class="instructions">
+                <span>Click</span> to place selected magnet<br/>
+                <span>None tool + click magnet</span> to delete it<br/>
+                <span>Drag</span> to rotate camera<br/>
+                <span>Scroll</span> to zoom in and out
+            </div>
+
+            <div id="footer"></div>
+        </script>
+
+        <script type="text/template" id="no-support">
+            <div id="container">
+                <div id="error"></div>
+            </div>
+        </script>
+
+        <div id="placeholder"></div>
+
+        <script src="wrappedgl.js"></script>
+        <script src="utilities.js"></script>
+        <script src="camera.js"></script>
+        <script src="renderer.js"></script>
+        <script src="slider.js"></script>
+        <script src="magnetsimulator.js"></script>
+        <script src="magnetsimulatorrenderer.js"></script>
+        <script src="magnetparticles.js"></script>
+
+        <script>
+            function concatenateWords (list) {
+                if (list.length === 0) {
+                    return '';
+                } else if (list.length === 1) {
+                    return "'" + list[0] + "'";
+                } else {
+                    var result = '';
+                    for (var i = 0; i < list.length; ++i) {
+                        result += "'" + list[i] + "'";
+                        if (i < list.length - 1) {
+                            result += i < list.length - 2 ? ', ' : ' and '
+                        }
+                    }
+                    return result;
+                }
+            }
+
+            WrappedGL.checkWebGLSupportWithExtensions(
+                ['ANGLE_instanced_arrays', 'WEBGL_depth_texture', 'OES_texture_float', 'OES_texture_float_linear', 'OES_texture_half_float', 'OES_texture_half_float_linear'],
+                function () {
+                    document.getElementById('placeholder').outerHTML = document.getElementById('main').innerHTML;
+                    var magnetSim = new MagnetParticles();
+                },
+                function (hasWebGL, unsupportedExtensions) {
+                    document.getElementById('placeholder').outerHTML = document.getElementById('no-support').innerHTML;
+                    if (!hasWebGL) {
+                        document.getElementById('error').textContent = 'Unfortunately, your browser does not support WebGL';
+                    } else {
+                        document.getElementById('error').textContent = 'Unfortunately, your browser does not support the ' + concatenateWords(unsupportedExtensions) + " WebGL extension" + (unsupportedExtensions.length > 1 ? 's.' : '.');
+                    }
+                }
+            );
+        </script>
+    </body>
+</html>
