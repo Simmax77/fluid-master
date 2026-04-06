@@ -15,6 +15,8 @@ uniform vec2 u_shadowResolution;
 uniform mat4 u_lightProjectionViewMatrix;
 uniform vec3 u_particleColor;
 
+uniform float u_glowIntensity;  // 0.0 for fluid/wind, > 0 for magnetic glow
+
 float linearstep (float left, float right, float x) {
     return clamp((x - left) / (right - left), 0.0, 1.0);
 }
@@ -42,10 +44,27 @@ void main () {
 
     float speed = data.b;
 
-    // Minimalist Palette: Base color from UI
-    // Add slight variance based on speed (whiter when faster)
-    vec3 color = u_particleColor + vec3(clamp(speed * 0.005, 0.0, 0.2));
+    // Base color from UI uniform
+    vec3 color = u_particleColor;
 
+    // ─── Magnetic Field Glow ───
+    // When u_glowIntensity > 0, we interpret particle speed as a proxy
+    // for local magnetic field strength (particles in strong B move faster).
+    // Add a subtle blue luminance that intensifies near magnets.
+    if (u_glowIntensity > 0.0) {
+        float fieldProxy = clamp(speed * 0.04, 0.0, 1.0);
+        float glowAmount = fieldProxy * u_glowIntensity;
+
+        // Blue-purple glow color — shifts from iron grey toward electric blue
+        vec3 glowColor = vec3(0.15, 0.35, 0.95);
+        color = mix(color, color + glowColor * 0.5, glowAmount);
+
+        // Subtle brightness boost in high-field regions
+        color += vec3(0.03, 0.06, 0.12) * glowAmount;
+    } else {
+        // Standard fluid mode — slight speed-based brightening
+        color += vec3(clamp(speed * 0.005, 0.0, 0.2));
+    }
 
     vec4 lightSpacePosition = u_lightProjectionViewMatrix * vec4(worldSpacePosition, 1.0);
     lightSpacePosition /= lightSpacePosition.w;
@@ -64,20 +83,16 @@ void main () {
         }
     }
 
-
     float ambient = 1.0 - occlusion * 0.7;
     float direct = 1.0 - (1.0 - shadow) * 0.8;
 
     color *= ambient * direct;
 
     if (speed >= 0.0) {
-        // Minimalist fluid rendering
         gl_FragColor = vec4(color, 1.0);
     } else {
         float len = length(v_coordinates * 2.0 - 1.0);
         vec3 backgroundColor = vec3(0.06, 0.06, 0.06) * (1.0 - len * 0.3);
         gl_FragColor = vec4(backgroundColor, 1.0);
     }
-
-    //gl_FragColor = vec4(texture2D(u_shadowDepthTexture, v_coordinates).rrr, 1.0);
 }

@@ -23,7 +23,7 @@ void main () {
     vec3 position = a_vertexPosition * u_sphereRadius + spherePosition;
 
     v_viewSpacePosition = vec3(u_viewMatrix * vec4(position, 1.0));
-    v_viewSpaceNormal = vec3(u_viewMatrix * vec4(a_vertexNormal, 0.0)); //this assumes we're not doing any weird stuff in the view matrix
+    v_viewSpaceNormal = vec3(u_viewMatrix * vec4(a_vertexNormal, 0.0));
 
     gl_Position = u_projectionMatrix * vec4(v_viewSpacePosition, 1.0);
 

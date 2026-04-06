@@ -12,14 +12,14 @@ uniform vec2 u_particlesResolution;
 uniform vec3 u_gridSize;
 
 uniform int u_numMagnets;
-uniform vec3 u_magnetPos[4];
-uniform float u_magnetRot[4];
-uniform float u_magnetSize[4];
+uniform vec3 u_magnetPos[8];
+uniform float u_magnetRot[8];
+uniform float u_magnetSize[8];
 
-// --- Bar magnet SDF ---
+// ─── Bar magnet SDF ───
 
 vec2 rot2D(vec2 p, float a) {
-    float c = cos(a); float s = sin(a);
+    float c = cos(a), s = sin(a);
     return vec2(c * p.x - s * p.y, s * p.x + c * p.y);
 }
 
@@ -30,21 +30,25 @@ float sdBar2D(vec2 p, float halfLen, float halfWidth) {
 
 void main() {
     vec3 position = texture2D(u_positionTexture, v_coordinates).rgb;
-    vec3 velocity = texture2D(u_velocityTexture, v_coordinates).rgb;
+    vec4 velData = texture2D(u_velocityTexture, v_coordinates);
+    vec3 velocity = velData.rgb;
+    float fieldIntensity = velData.a;  // Passed through from force shader
+
     vec3 randomDir = texture2D(u_randomTexture, fract(v_coordinates + u_frameNumber / u_particlesResolution)).rgb;
 
-    // Integrate position
+    // ─── Euler integration ───
     vec3 newPosition = position + velocity * u_timeStep;
-    
-    // Very subtle random jitter
-    newPosition.x += randomDir.x * 0.002 * u_timeStep;
-    newPosition.z += randomDir.z * 0.002 * u_timeStep;
+
+    // Very subtle jitter — iron filings are heavy, minimal Brownian motion
+    float jitterScale = 0.001 * (1.0 - fieldIntensity * 0.8);  // Less jitter in strong fields
+    newPosition.x += randomDir.x * jitterScale * u_timeStep;
+    newPosition.z += randomDir.z * jitterScale * u_timeStep;
 
     // Keep Y on the flat surface
     newPosition.y = clamp(newPosition.y, 0.2, 0.8);
 
-    // Push out of bar magnet bodies
-    for (int i = 0; i < 4; i++) {
+    // ─── Push out of bar magnet bodies ───
+    for (int i = 0; i < 8; i++) {
         if (i >= u_numMagnets) break;
 
         float halfLen = u_magnetSize[i] * 0.5;
@@ -53,22 +57,22 @@ void main() {
         vec2 localPos = rot2D(vec2(newPosition.x, newPosition.z) - mCenter, -u_magnetRot[i]);
         float sdf = sdBar2D(localPos, halfLen, halfW);
 
-        if (sdf < 0.15) {
+        if (sdf < 0.2) {
             float eps = 0.04;
             float dx = sdBar2D(localPos + vec2(eps, 0.0), halfLen, halfW) - sdf;
             float dy = sdBar2D(localPos + vec2(0.0, eps), halfLen, halfW) - sdf;
             vec2 n2D = normalize(vec2(dx, dy) + 0.0001);
             n2D = rot2D(n2D, u_magnetRot[i]);
 
-            float pushDist = 0.15 - sdf + 0.08;
+            float pushDist = 0.2 - sdf + 0.1;
             newPosition.x += n2D.x * pushDist;
             newPosition.z += n2D.y * pushDist;
         }
     }
 
-    // Boundary: keep inside the grid
+    // ─── Boundary clamping ───
     newPosition.x = clamp(newPosition.x, 0.2, u_gridSize.x - 0.2);
     newPosition.z = clamp(newPosition.z, 0.2, u_gridSize.z - 0.2);
 
-    gl_FragColor = vec4(newPosition, 0.0);
+    gl_FragColor = vec4(newPosition, fieldIntensity);
 }

@@ -267,8 +267,9 @@ var Renderer = (function () {
 
     //you need to call reset() with the correct parameters before drawing anything
     //projectionMatrix and viewMatrix are both expected to be Float32Array(16)
-    Renderer.prototype.draw = function (simulator, projectionMatrix, viewMatrix, particleColor) {
+    Renderer.prototype.draw = function (simulator, projectionMatrix, viewMatrix, particleColor, glowIntensity) {
         particleColor = particleColor || [0.0, 0.73, 1.0];
+        glowIntensity = glowIntensity || 0.0;
 
         var wgl = this.wgl;
 
@@ -445,7 +446,8 @@ var Renderer = (function () {
             .uniformTexture('u_shadowDepthTexture', 2, wgl.TEXTURE_2D, this.depthTexture)
             .uniform2f('u_shadowResolution', SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT)
             .uniformMatrix4fv('u_lightProjectionViewMatrix', false, this.lightProjectionViewMatrix)
-            .uniform3f('u_particleColor', particleColor[0], particleColor[1], particleColor[2]);
+            .uniform3f('u_particleColor', particleColor[0], particleColor[1], particleColor[2])
+            .uniform1f('u_glowIntensity', glowIntensity);
 
         wgl.drawArrays(compositeDrawState, wgl.TRIANGLE_STRIP, 0, 4);
 

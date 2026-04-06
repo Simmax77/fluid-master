@@ -213,6 +213,16 @@ canvas {
     color: var(--text-dim);
 }
 
+.quality-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--accent-color);
+    letter-spacing: 0;
+    text-transform: none;
+    opacity: 0.8;
+}
+
 #right-bar .slider { width: 140px; }
 
 .slider-label {
@@ -222,6 +232,9 @@ canvas {
     letter-spacing: 0.5px;
     text-transform: uppercase;
     margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .slider {
@@ -323,4 +336,9 @@ input[type="color"]::-webkit-color-swatch {
     -webkit-text-fill-color: transparent;
     background-clip: text;
     font-weight: 700;
+}
+
+/* Cursor states for drag interaction */
+canvas.dragging {
+    cursor: grabbing !important;
 }

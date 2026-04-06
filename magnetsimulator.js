@@ -2,10 +2,13 @@
 
 var MagnetSimulator = (function () {
 
+    var MAX_MAGNETS = 8;
+
     function MagnetSimulator(wgl, onLoaded) {
         this.wgl = wgl;
 
-        this.fieldStrength = 10.0;
+        this.fieldStrength = 15.0;
+        this.interactionStrength = 3.0;
         this.magnets = [];
 
         this.particlesWidth = 0;
@@ -70,7 +73,6 @@ var MagnetSimulator = (function () {
             posData[i * 4 + 2] = particlePositions[i][2];
             posData[i * 4 + 3] = 0.0;
 
-            // Start at rest
             velData[i * 4] = 0.0;
             velData[i * 4 + 1] = 0.0;
             velData[i * 4 + 2] = 0.0;
@@ -108,9 +110,10 @@ var MagnetSimulator = (function () {
     }
 
     MagnetSimulator.prototype.setMagnetUniforms = function (drawState) {
-        drawState.uniform1i('u_numMagnets', this.magnets.length);
-        for (var i = 0; i < 4; i++) {
-            if (i < this.magnets.length) {
+        var count = Math.min(this.magnets.length, MAX_MAGNETS);
+        drawState.uniform1i('u_numMagnets', count);
+        for (var i = 0; i < MAX_MAGNETS; i++) {
+            if (i < count) {
                 var m = this.magnets[i];
                 drawState.uniform3f('u_magnetPos[' + i + ']', m.pos[0], m.pos[1], m.pos[2]);
                 drawState.uniform1f('u_magnetRot[' + i + ']', m.rotation || 0.0);
@@ -129,7 +132,7 @@ var MagnetSimulator = (function () {
         this.frameNumber += 1;
         var wgl = this.wgl;
 
-        // Pass 1: Compute magnetic forces -> update velocities
+        // Pass 1: Compute magnetic forces → update velocities
         wgl.framebufferTexture2D(this.simulationFramebuffer, wgl.FRAMEBUFFER,
             wgl.COLOR_ATTACHMENT0, wgl.TEXTURE_2D, this.particleVelocityTextureTemp, 0);
 
@@ -142,6 +145,7 @@ var MagnetSimulator = (function () {
             .uniformTexture('u_velocityTexture', 1, wgl.TEXTURE_2D, this.particleVelocityTexture)
             .uniform1f('u_timeStep', timeStep)
             .uniform1f('u_fieldStrength', this.fieldStrength)
+            .uniform1f('u_interactionStrength', this.interactionStrength)
             .uniform3f('u_gridSize', this.gridWidth, this.gridHeight, this.gridDepth)
             .uniform1f('u_frameNumber', this.frameNumber);
 

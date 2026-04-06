@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <title>Magnetic Field - Particle Lab</title>
-        <meta name="description" content="3D magnetic field simulation with iron filing particles and placeable horseshoe magnets using WebGL.">
+        <meta name="description" content="3D magnetic dipole field simulation with iron filing particles and placeable bar magnets using WebGL.">
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="magnet.css"/>
     </head>
@@ -19,11 +19,17 @@
                 <div class="slider-label field-label">Field Strength</div>
                 <div id="field-strength-slider" class="slider"></div>
 
+                <div class="slider-label">Clustering</div>
+                <div id="interaction-slider" class="slider"></div>
+
                 <div class="slider-label">Color</div>
-                <input type="color" id="color-picker" value="#474752">
+                <input type="color" id="color-picker" value="#383C4D">
 
                 <div class="slider-label">Particle Size</div>
                 <div id="size-slider" class="slider"></div>
+
+                <div class="slider-label">Quality <span id="quality-label" class="quality-badge"></span></div>
+                <div id="quality-slider" class="slider"></div>
 
                 <div class="control-row">
                     <button id="reset-button" class="action-btn">↻ Reset</button>
@@ -35,8 +41,8 @@
                 <div class="right-bar-section">
                     <div class="right-bar-label">Magnets <span id="magnet-count-badge" class="source-badge empty">0</span></div>
                     <div class="right-bar-tools">
-                        <button id="tool-none-button" class="action-btn right-btn active-tool" data-tooltip="Select / Delete magnets">🚫 None</button>
-                        <button id="tool-horseshoe-button" class="action-btn right-btn" data-tooltip="Place a bar magnet — creates N/S poles with magnetic field lines">🧲 Bar Magnet</button>
+                        <button id="tool-none-button" class="action-btn right-btn active-tool" data-tooltip="Drag magnets to reposition · Double-click to delete">🔄 Move</button>
+                        <button id="tool-horseshoe-button" class="action-btn right-btn" data-tooltip="Click to place a bar magnet with N/S poles">🧲 Bar Magnet</button>
                     </div>
                 </div>
 
@@ -56,9 +62,9 @@
 
             <div class="instructions">
                 <span>Click</span> to place selected magnet<br/>
-                <span>None tool + click magnet</span> to delete it<br/>
-                <span>Drag</span> to rotate camera<br/>
-                <span>Scroll</span> to zoom in and out
+                <span>Drag</span> to reposition (Move tool)<br/>
+                <span>Double-click</span> to delete a magnet<br/>
+                <span>Right-drag</span> to rotate camera · <span>Scroll</span> to zoom
             </div>
 
             <div id="footer"></div>

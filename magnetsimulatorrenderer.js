@@ -30,6 +30,11 @@ var MagnetSimulatorRenderer = (function () {
         function start() {
             this.mouseX = 0;
             this.mouseY = 0;
+
+            // Iron filing color — dark metallic grey with slight blue tint
+            this.particleColor = [0.22, 0.24, 0.30];
+            this.glowIntensity = 1.0;
+
             setTimeout(onLoaded, 1);
         }
     }
@@ -57,13 +62,14 @@ var MagnetSimulatorRenderer = (function () {
     };
 
     MagnetSimulatorRenderer.prototype.update = function (timeStep) {
-        if (!this.particleColor) {
-            // Dark grey — iron filings color
-            this.particleColor = [0.28, 0.28, 0.32];
-        }
-
         this.simulator.simulate(timeStep);
-        this.renderer.draw(this.simulator, this.projectionMatrix, this.camera.getViewMatrix(), this.particleColor);
+        this.renderer.draw(
+            this.simulator,
+            this.projectionMatrix,
+            this.camera.getViewMatrix(),
+            this.particleColor,
+            this.glowIntensity
+        );
     };
 
     MagnetSimulatorRenderer.prototype.onResize = function (event) {
