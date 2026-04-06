@@ -80,5 +80,5 @@ Since this is a static WebGL project, you don't need any complex installation.
     *   Dipole vector field calculations
 
 ---
-*   Inspired by david.li's fluid simulation
-*Enjoy the flow! 🌊*
+*   Inspired by david.li's fluid simulation, MIT license(free to share, free to use, free to modify)
+* Enjoy the flow! 🌊*
