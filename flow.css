@@ -1,0 +1,309 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+    --accent-color: #007aff;
+    --accent-hover: #0060d1;
+    --dark-bg: rgba(20, 20, 22, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --text-main: #f0f0f5;
+    --text-dim: #9aa0a6;
+}
+
+* {
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #0a0a0c;
+    color: var(--text-main);
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+
+canvas#render {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* ── Left Panel ── */
+#ui {
+    position: absolute;
+    z-index: 10;
+    top: 32px;
+    left: 32px;
+    background: var(--dark-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-width: 260px;
+    max-width: 300px;
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+#back-button {
+    display: block;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    pointer-events: auto;
+    transition: color 0.2s;
+}
+
+#back-button:hover {
+    color: var(--text-main);
+}
+
+/* ── Section Labels ── */
+.slider-label {
+    color: var(--text-dim);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+
+/* ── Sliders ── */
+.slider {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    position: relative;
+    pointer-events: auto;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.slider:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.slider div {
+    background: var(--text-main);
+    height: 100%;
+    border-radius: 3px;
+    transition: background 0.2s, width 0.1s ease-out;
+}
+
+.slider:hover div {
+    background: #fff;
+}
+
+/* ── Particle Count Buttons ── */
+#count-wrapper {
+    display: flex;
+    gap: 0;
+    border-radius: 6px;
+    overflow: hidden;
+    pointer-events: auto;
+}
+
+#count-wrapper div {
+    flex: 1;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 8px 4px;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.05);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    color: var(--text-dim);
+    transition: all 0.2s ease;
+    letter-spacing: 0.3px;
+}
+
+#count-wrapper div:last-child {
+    border-right: none;
+}
+
+#count-wrapper div:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+#count-wrapper div.active {
+    background: var(--accent-color);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+}
+
+/* ── Action Buttons ── */
+.action-btn {
+    font-size: 12px;
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    color: var(--text-main);
+    border-radius: 6px;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    pointer-events: auto;
+    white-space: nowrap;
+}
+
+.action-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.action-btn:active {
+    transform: scale(0.97);
+}
+
+.action-btn.active-mode {
+    background: var(--accent-color) !important;
+    color: #fff !important;
+    border-color: var(--accent-hover) !important;
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+}
+
+/* ── Color Mode Row ── */
+.control-row {
+    display: flex;
+    gap: 6px;
+    pointer-events: auto;
+    flex-wrap: wrap;
+}
+
+.control-row .action-btn {
+    flex: 1;
+    text-align: center;
+    min-width: 0;
+    padding: 6px 8px;
+    font-size: 11px;
+}
+
+/* ── Preset Row ── */
+.preset-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    pointer-events: auto;
+}
+
+.preset-row .action-btn {
+    font-size: 11px;
+    padding: 7px 10px;
+    text-align: center;
+}
+
+/* ── Hue Picker ── */
+#color-section {
+    text-align: center;
+    pointer-events: auto;
+}
+
+#picker {
+    margin-top: 6px;
+    cursor: pointer;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ── Divider ── */
+.panel-divider {
+    height: 1px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* ── Instructions ── */
+.instructions {
+    position: absolute;
+    z-index: 10;
+    bottom: 32px;
+    left: 32px;
+    background: var(--dark-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--text-dim);
+}
+
+.instructions span {
+    font-weight: 600;
+    color: var(--text-main);
+    font-size: 12px;
+    padding: 2px 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    margin-right: 4px;
+}
+
+/* ── Footer / FPS ── */
+#footer {
+    position: absolute;
+    z-index: 10;
+    right: 24px;
+    bottom: 24px;
+    font-size: 12px;
+    color: var(--text-dim);
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+#fps-counter {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.25);
+    font-size: 11px;
+}
+
+/* ── Pause Overlay ── */
+#pause-overlay {
+    position: absolute;
+    z-index: 15;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.3);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#pause-overlay.visible {
+    opacity: 1;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    #ui {
+        top: 16px;
+        left: 16px;
+        padding: 16px;
+        min-width: 220px;
+    }
+    .instructions {
+        bottom: 16px;
+        left: 16px;
+    }
+}

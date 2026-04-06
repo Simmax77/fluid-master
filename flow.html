@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Volumetric Flow - Particle Lab</title>
+    <meta name="description" content="Volumetric particle flow simulation with curl-noise turbulence, GPU sorting, and volumetric lighting.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="flow.css">
+</head>
+<body>
+    <canvas id="render" width="1" height="1"></canvas>
+
+    <div id="ui">
+        <a href="index.html" id="back-button">← Menu</a>
+
+        <div class="slider-label">Particle Count</div>
+        <div id="count-wrapper">
+            <div id="count-16">66K</div>
+            <div id="count-17">131K</div>
+            <div id="count-18">262K</div>
+            <div id="count-19">524K</div>
+            <div id="count-20">1M</div>
+            <div id="count-21">2M</div>
+        </div>
+
+        <div class="slider-label">Speed</div>
+        <div id="speed-slider" class="slider"></div>
+
+        <div class="slider-label">Turbulence</div>
+        <div id="turbulence-slider" class="slider"></div>
+
+        <div class="slider-label">Noise Scale</div>
+        <div id="noise-slider" class="slider"></div>
+
+        <div class="panel-divider"></div>
+
+        <div class="slider-label">Color Mode</div>
+        <div class="control-row">
+            <button id="mode-solid" class="action-btn active-mode">Solid</button>
+            <button id="mode-velocity" class="action-btn">Velocity</button>
+            <button id="mode-rainbow" class="action-btn">Rainbow</button>
+        </div>
+
+        <div id="color-section">
+            <div class="slider-label">Color</div>
+            <canvas id="picker" width="150" height="150"></canvas>
+        </div>
+
+        <div class="panel-divider"></div>
+
+        <div class="slider-label">Presets</div>
+        <div class="preset-row">
+            <button id="preset-calm" class="action-btn">🌿 Calm</button>
+            <button id="preset-storm" class="action-btn">⛈️ Storm</button>
+            <button id="preset-galaxy" class="action-btn">🌌 Galaxy</button>
+            <button id="preset-fireflies" class="action-btn">✨ Fireflies</button>
+        </div>
+
+        <div class="panel-divider"></div>
+
+        <div class="control-row">
+            <button id="pause-button" class="action-btn">⏸ Pause</button>
+        </div>
+    </div>
+
+    <div class="instructions">
+        <span>Drag</span> to rotate camera<br/>
+        <span>Presets</span> for quick settings<br/>
+        <span>Space</span> to pause / resume
+    </div>
+
+    <div id="pause-overlay">⏸ PAUSED</div>
+
+    <div id="footer">
+        <span id="fps-counter">-- FPS</span>
+    </div>
+
+    <script src="flowshared.js"></script>
+    <script src="flowui.js"></script>
+    <script src="flowsim.js"></script>
+    <script src="flowengine.js"></script>
+    <script>
+    if (flowHasWebGLSupport(['OES_texture_float'])) {
+        var flow = new FlowEngine(document.getElementById('render'));
+
+        flow.setHue(0);
+        flow.setTimeScale(FLOW_INITIAL_SPEED);
+        flow.setPersistence(FLOW_INITIAL_TURBULENCE);
+        flow.setNoiseScale(FLOW_NOISE_POSITION_SCALE);
+
+        // Speed slider
+        var speedSlider = new FlowSlider(document.getElementById('speed-slider'), 0.0, FLOW_MAX_SPEED, FLOW_INITIAL_SPEED, function (v) {
+            flow.setTimeScale(v);
+        });
+
+        // Turbulence slider
+        var turbSlider = new FlowSlider(document.getElementById('turbulence-slider'), 0.0, FLOW_MAX_TURBULENCE, FLOW_INITIAL_TURBULENCE, function (v) {
+            flow.setPersistence(v);
+        });
+
+        // Noise scale slider
+        var noiseSlider = new FlowSlider(document.getElementById('noise-slider'), 0.3, 5.0, FLOW_NOISE_POSITION_SCALE, function (v) {
+            flow.setNoiseScale(v);
+        });
+
+        // Particle count buttons
+        var buttons = new FlowButtons([
+            document.getElementById('count-16'),
+            document.getElementById('count-17'),
+            document.getElementById('count-18'),
+            document.getElementById('count-19'),
+            document.getElementById('count-20'),
+            document.getElementById('count-21')
+        ], function (index) {
+            flow.changeQualityLevel(index);
+        });
+
+        // Color picker
+        var picker = new FlowHuePicker(document.getElementById('picker'), function (value) {
+            flow.setHue(value);
+            var color = flowHsvToRGB(value, FLOW_UI_SATURATION, FLOW_UI_VALUE);
+            var rgbStr = flowRgbToString(color);
+            speedSlider.setColor(rgbStr);
+            turbSlider.setColor(rgbStr);
+            noiseSlider.setColor(rgbStr);
+            buttons.setColor(rgbStr);
+        });
+
+        // Color mode buttons
+        var modeButtons = [
+            document.getElementById('mode-solid'),
+            document.getElementById('mode-velocity'),
+            document.getElementById('mode-rainbow')
+        ];
+        modeButtons.forEach(function (btn, idx) {
+            btn.addEventListener('click', function () {
+                flow.setColorMode(idx);
+                modeButtons.forEach(function (b) { b.classList.remove('active-mode'); });
+                btn.classList.add('active-mode');
+                // Show/hide color picker for solid mode
+                document.getElementById('color-section').style.display = idx === 0 ? 'block' : 'none';
+            });
+        });
+
+        // Presets
+        var presetKeys = ['calm', 'storm', 'galaxy', 'fireflies'];
+        presetKeys.forEach(function (key) {
+            document.getElementById('preset-' + key).addEventListener('click', function () {
+                var p = FLOW_PRESETS[key];
+                speedSlider.setValue(p.speed);
+                turbSlider.setValue(p.turbulence);
+                noiseSlider.setValue(p.noiseScale);
+                flow.setTimeScale(p.speed);
+                flow.setPersistence(p.turbulence);
+                flow.setNoiseScale(p.noiseScale);
+            });
+        });
+
+        // Pause button
+        var pauseBtn = document.getElementById('pause-button');
+        var pauseOverlay = document.getElementById('pause-overlay');
+        function togglePause() {
+            var isPaused = !flow.isPaused();
+            flow.setPaused(isPaused);
+            pauseBtn.textContent = isPaused ? '▶ Play' : '⏸ Pause';
+            if (isPaused) pauseOverlay.classList.add('visible');
+            else pauseOverlay.classList.remove('visible');
+        }
+        pauseBtn.addEventListener('click', togglePause);
+
+        // Spacebar to pause
+        document.addEventListener('keydown', function (e) {
+            if (e.code === 'Space') { e.preventDefault(); togglePause(); }
+        });
+
+        // FPS counter
+        var fpsEl = document.getElementById('fps-counter');
+        setInterval(function () {
+            fpsEl.textContent = flow.getFPS() + ' FPS';
+        }, 500);
+    } else {
+        document.getElementById('ui').style.display = 'none';
+        document.body.innerHTML = '<div style="color:#888;text-align:center;margin-top:40px;font-family:Inter,sans-serif;">Your browser does not support the required WebGL extensions.</div>';
+    }
+    </script>
+</body>
+</html>

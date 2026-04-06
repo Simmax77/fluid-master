@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <title>Wind Tunnel - Particle Lab</title>
-        <meta name="description" content="3D wind tunnel simulation with placeable obstacles using WebGL particle rendering.">
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="wind.css"/>
-    </head>
 
-    <body>
-        <script type="text/template" id="main">
+<head>
+    <meta charset="utf-8">
+    <title>Wind Tunnel - Particle Lab</title>
+    <meta name="description"
+        content="3D wind tunnel simulation with placeable obstacles using WebGL particle rendering.">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Orbitron:wght@500;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="wind.css" />
+</head>
+
+<body>
+    <script type="text/template" id="main">
             <canvas id="canvas" width="1920" height="1080"></canvas>
             <canvas id="overlay-canvas"></canvas>
 
@@ -69,56 +73,57 @@
             <div id="footer"></div>
         </script>
 
-        <script type="text/template" id="no-support">
+    <script type="text/template" id="no-support">
             <div id="container">
                 <div id="error"></div>
             </div>
         </script>
 
-        <div id="placeholder"></div>
+    <div id="placeholder"></div>
 
-        <script src="wrappedgl.js"></script>
-        <script src="utilities.js"></script>
-        <script src="camera.js"></script>
-        <script src="renderer.js"></script>
-        <script src="slider.js"></script>
-        <script src="windsimulator.js"></script>
-        <script src="windsimulatorrenderer.js"></script>
-        <script src="windparticles.js"></script>
+    <script src="wrappedgl.js"></script>
+    <script src="utilities.js"></script>
+    <script src="camera.js"></script>
+    <script src="renderer.js"></script>
+    <script src="slider.js"></script>
+    <script src="windsimulator.js"></script>
+    <script src="windsimulatorrenderer.js"></script>
+    <script src="windparticles.js"></script>
 
-        <script>
-            function concatenateWords (list) {
-                if (list.length === 0) {
-                    return '';
-                } else if (list.length === 1) {
-                    return "'" + list[0] + "'";
-                } else {
-                    var result = '';
-                    for (var i = 0; i < list.length; ++i) {
-                        result += "'" + list[i] + "'";
-                        if (i < list.length - 1) {
-                            result += i < list.length - 2 ? ', ' : ' and '
-                        }
+    <script>
+        function concatenateWords(list) {
+            if (list.length === 0) {
+                return '';
+            } else if (list.length === 1) {
+                return "'" + list[0] + "'";
+            } else {
+                var result = '';
+                for (var i = 0; i < list.length; ++i) {
+                    result += "'" + list[i] + "'";
+                    if (i < list.length - 1) {
+                        result += i < list.length - 2 ? ', ' : ' and '
                     }
-                    return result;
+                }
+                return result;
+            }
+        }
+
+        WrappedGL.checkWebGLSupportWithExtensions(
+            ['ANGLE_instanced_arrays', 'WEBGL_depth_texture', 'OES_texture_float', 'OES_texture_float_linear', 'OES_texture_half_float', 'OES_texture_half_float_linear'],
+            function () {
+                document.getElementById('placeholder').outerHTML = document.getElementById('main').innerHTML;
+                var windTunnel = new WindParticles();
+            },
+            function (hasWebGL, unsupportedExtensions) {
+                document.getElementById('placeholder').outerHTML = document.getElementById('no-support').innerHTML;
+                if (!hasWebGL) {
+                    document.getElementById('error').textContent = 'Unfortunately, your browser does not support WebGL';
+                } else {
+                    document.getElementById('error').textContent = 'Unfortunately, your browser does not support the ' + concatenateWords(unsupportedExtensions) + " WebGL extension" + (unsupportedExtensions.length > 1 ? 's.' : '.');
                 }
             }
+        );
+    </script>
+</body>
 
-            WrappedGL.checkWebGLSupportWithExtensions(
-                ['ANGLE_instanced_arrays', 'WEBGL_depth_texture', 'OES_texture_float', 'OES_texture_float_linear', 'OES_texture_half_float', 'OES_texture_half_float_linear'],
-                function () {
-                    document.getElementById('placeholder').outerHTML = document.getElementById('main').innerHTML;
-                    var windTunnel = new WindParticles();
-                },
-                function (hasWebGL, unsupportedExtensions) {
-                    document.getElementById('placeholder').outerHTML = document.getElementById('no-support').innerHTML;
-                    if (!hasWebGL) {
-                        document.getElementById('error').textContent = 'Unfortunately, your browser does not support WebGL';
-                    } else {
-                        document.getElementById('error').textContent = 'Unfortunately, your browser does not support the ' + concatenateWords(unsupportedExtensions) + " WebGL extension" + (unsupportedExtensions.length > 1 ? 's.' : '.');
-                    }
-                }
-            );
-        </script>
-    </body>
 </html>
