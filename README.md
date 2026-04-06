@@ -1,52 +1,49 @@
-# 🌊 Fluid Particles WebGL Simulation
+# 🔬 Particle Lab WebGL Simulations
 
-A high-performance, real-time particle-based 3D fluid simulation and rendering engine built using WebGL. Experience the mesmerizing physics of fluids directly in your browser with advanced interaction tools and a custom box editor.
+A high-performance, real-time 3D particle simulation and rendering engine built using WebGL. Experience the mesmerizing physics of fluids, volumetric turbulence, and magnetic fields directly in your browser. All simulations feature a unified, modern glassmorphism UI for a premium interactive experience.
 
 ---
 
-## ✨ Features
+## ✨ Features & Simulations
 
-### 🌪️ Advanced Physics Tools
-*   **Vortex:** Create swirling vortices that pull particles inward.
-*   **Wind:** Directional wind forces with clickable drag-to-set vector.
-*   **Black Hole:** Intense gravitational and orbital forces.
-*   **Fountain:** Columnar upward particle propulsion.
-*   **Turbulence:** Chaotic, swirling random force fields.
-*   **Wave:** Concentric pulse generation.
-*   **Magnet:** Gentle particle attraction.
-*   **Explode:** Instantaneous force dispersion.
+### 💧 Fluid Simulation (FLIP Solver)
+Interactive 3D fluid dynamics. Draw custom volumes directly on walls to create new collision boxes and use advanced physics tools to manipulate the flow.
+*   **Physics Tools:** Vortex, Wind, Black Hole, Fountain, Turbulence, Wave, Magnet, and Explode tools.
+*   **Interactive Box Editor:** Draw, resize, and translate bounding boxes for dynamic environments.
+*   **Visual Customization:** Real-time sliders for Density, Fluidity, Speed, Tool Strength, and dynamic color picking.
 
-### 🛠️ Interactive Box Editor
-*   **Custom Environments:** Draw directly on walls to create new collision boxes.
-*   **Dynamic Resizing:** Drag box faces to resize or translate existing geometry.
-*   **Precise Control:** Tailor the simulation space to your preference before starting.
+### 🌊 Volumetric Flow
+Mesmerizing 3D particle flow driven by curl-noise turbulence.
+*   **High Particle Count:** Simulates and renders up to 2 million particles simultaneously.
+*   **Volumetric Lighting:** Advanced rendering techniques including GPU sorting and shadow mapping.
+*   **Interactive Parameters:** Real-time control over turbulence, velocity, color modes (e.g., Velocity, Density, Solid), and background appearance.
 
-### 🎨 Visual & Physics Customization
-*   **Real-time Sliders:** Adjust **Density**, **Fluidity**, **Speed**, and **Tool Strength** on the fly.
-*   **Dynamic Coloring:** Change the fluid color using a sleek color picker.
-*   **Responsive Rendering:** High-fidelity visuals with support for `devicePixelRatio`.
+### 🧲 Magnetic Field
+A physical iron filing simulation with placeable magnetic dipoles.
+*   **Interactive Magnets:** Place and orient Horseshoe magnets that directly attract and align particles.
+*   **Iron Filing Physics:** Watch particles form intricate, branching structures as they align along magnetic field lines.
+*   **Fine-Tuning:** Use sliders to control the Magnetization force and ambient Friction.
+
+---
+
+## 🎨 Global Aesthetics
+
+The entire platform boasts a unified, premium **Glassmorphism UI**:
+*   Frosted glass panels, dynamic blur, and sleek shadows.
+*   Modern typography utilizing **Orbitron** and **Inter** from Google Fonts.
+*   Customized sliders and toggle buttons for all simulation controls.
 
 ---
 
 ## 🎮 Controls
 
-### Simulation Mode
-| Action | Control |
-| :--- | :--- |
-| **Rotate Camera** | Mouse Left Drag |
-| **Zoom** | Scroll Wheel |
-| **Interact** | Move mouse to push particles |
-| **Place Tool** | Left Click |
-| **Set Wind Direction** | Click & Drag (when Wind tool selected) |
-| **Delete Source** | Select **🚫 None** and click a source |
+### Global / Sandbox Navigation
+*   Start at the universal **Particle Lab Dashboard** (`index.html`) to launch any simulation.
+*   Use the navigation controls within each simulation to quickly jump between the Fluid, Flow, and Magnetism modules.
 
-### Editor Mode
-| Action | Control |
-| :--- | :--- |
-| **Rotate Camera** | `Space` + Mouse Drag |
-| **Create Box** | Draw on walls |
-| **Resize Face** | Drag box faces |
-| **Move Box** | `Shift` + Drag box faces |
+### Simulator-Specific Controls
+*   **Fluid Lab:** Combine `Space` + Drag for camera rotation in Editor mode. Left click to place force tools or drag wall faces to create/resize boxes.
+*   **Flow & Magnetic Labs:** Click and drag the scene to rotate the camera. Scroll to zoom. Select UI buttons to drop magnets or toggle particle properties.
 
 ---
 
@@ -55,8 +52,8 @@ A high-performance, real-time particle-based 3D fluid simulation and rendering e
 Since this is a static WebGL project, you don't need any complex installation.
 
 ### Prerequisites
-*   A modern web browser with WebGL 1.0/2.0 support.
-*   The following WebGL extensions are required for optimal performance:
+*   A modern web browser with WebGL 2.0 support (or WebGL 1.0 with robust extension support).
+*   The following WebGL extensions are leveraged for optimal performance:
     *   `ANGLE_instanced_arrays`
     *   `WEBGL_depth_texture`
     *   `OES_texture_float`
@@ -76,9 +73,12 @@ Since this is a static WebGL project, you don't need any complex installation.
 
 *   **Logic:** Native JavaScript (ES5/ES6)
 *   **Graphics:** WebGL (Custom GL wrapper: `wrappedgl.js`)
-*   **Styling:** Vanilla CSS with **Orbitron** and **Inter** Google Fonts.
-*   **Simulation Algorithm:** Particle-based fluid dynamics (PBF-inspired).
+*   **Styling:** Vanilla CSS (Glassmorphism design, native variables, Flexbox/Grid)
+*   **Simulation Algorithms:** 
+    *   Particle-based fluid dynamics (FLIP/PBF-inspired)
+    *   Curl-noise volumetric turbulence
+    *   Dipole vector field calculations
 
 ---
-*   Inspired by David Li's fluid simulation
+*   Inspired by david.li's fluid simulation
 *Enjoy the flow! 🌊*
