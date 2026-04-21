@@ -47,7 +47,7 @@ canvas {
 #ui {
     position: absolute;
     z-index: 10;
-    pointer-events: none;
+    pointer-events: auto;
     top: 32px;
     left: 32px;
     
@@ -64,6 +64,19 @@ canvas {
     gap: 16px;
     min-width: 260px;
     transition: all 0.3s ease;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+#ui::-webkit-scrollbar {
+    width: 4px;
+}
+#ui::-webkit-scrollbar-track {
+    background: transparent;
+}
+#ui::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.15);
+    border-radius: 2px;
 }
 
 #right-bar {
@@ -450,4 +463,48 @@ input[type="color"]::-webkit-color-swatch {
     position: absolute;
     z-index: 6;
     pointer-events: none;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    #ui {
+        top: 10px;
+        left: 10px;
+        padding: 12px;
+        min-width: 160px;
+        max-width: calc(50vw - 15px);
+        gap: 10px;
+    }
+    #right-bar {
+        right: 10px;
+        padding: 12px;
+        max-width: calc(50vw - 15px);
+        gap: 12px;
+        width: auto;
+    }
+    .instructions {
+        bottom: 10px;
+        left: 10px;
+        padding: 10px;
+        max-width: 90vw;
+        font-size: 11px;
+    }
+    #footer {
+        display: none;
+    }
+    .slider {
+        height: 12px;
+    }
+    .right-bar-label, .slider-label {
+        font-size: 9px;
+    }
+    .action-btn, .right-btn {
+        padding: 8px 4px;
+        font-size: 10px;
+        white-space: normal;
+        line-height: 1.2;
+    }
+    #ui::-webkit-scrollbar, #right-bar::-webkit-scrollbar {
+        width: 2px;
+    }
 }

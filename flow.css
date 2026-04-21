@@ -54,8 +54,14 @@ canvas#render {
     min-width: 260px;
     max-width: 300px;
     transition: all 0.3s ease;
-    pointer-events: none;
+    pointer-events: auto;
+    max-height: 90vh;
+    overflow-y: auto;
 }
+
+#ui::-webkit-scrollbar { width: 4px; }
+#ui::-webkit-scrollbar-track { background: transparent; }
+#ui::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
 
 #back-button {
     display: block;
@@ -297,13 +303,34 @@ canvas#render {
 /* ── Responsive ── */
 @media (max-width: 768px) {
     #ui {
-        top: 16px;
-        left: 16px;
-        padding: 16px;
-        min-width: 220px;
+        top: 10px;
+        left: 10px;
+        padding: 12px;
+        min-width: 200px;
+        max-width: calc(100vw - 20px);
+        gap: 10px;
     }
     .instructions {
-        bottom: 16px;
-        left: 16px;
+        bottom: 10px;
+        left: 10px;
+        padding: 10px;
+        font-size: 11px;
+    }
+    .slider {
+        height: 12px;
+    }
+    .slider-label {
+        font-size: 9px;
+    }
+    .action-btn {
+        padding: 8px 6px;
+        font-size: 10px;
+    }
+    #count-wrapper div {
+        padding: 8px 2px;
+        font-size: 9px;
+    }
+    #footer {
+        display: none;
     }
 }
