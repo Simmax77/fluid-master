@@ -149,6 +149,10 @@ var MagnetParticles = (function () {
             this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
             document.addEventListener('mouseup', this.onMouseUp.bind(this));
             this.canvas.addEventListener('dblclick', this.onDoubleClick.bind(this));
+            
+            this.canvas.addEventListener('touchmove', this.onMouseMove.bind(this), {passive: false});
+            this.canvas.addEventListener('touchstart', this.onMouseDown.bind(this), {passive: false});
+            document.addEventListener('touchend', this.onMouseUp.bind(this));
             window.addEventListener('resize', this.onResize.bind(this));
             this.onResize();
 

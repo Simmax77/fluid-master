@@ -232,6 +232,10 @@ var FluidParticles = (function () {
             canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
             document.addEventListener('mouseup', this.onMouseUp.bind(this));
 
+            canvas.addEventListener('touchmove', this.onMouseMove.bind(this), {passive: false});
+            canvas.addEventListener('touchstart', this.onMouseDown.bind(this), {passive: false});
+            document.addEventListener('touchend', this.onMouseUp.bind(this));
+
             document.addEventListener('keydown', this.onKeyDown.bind(this));
             document.addEventListener('keyup', this.onKeyUp.bind(this));
 

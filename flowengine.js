@@ -63,6 +63,28 @@ var FlowCamera = function (element) {
             element.style.cursor = 'grab';
         }
     });
+
+    element.addEventListener('touchstart', function (event) {
+        mouseDown = true;
+        lastMouseX = flowGetMousePosition(event, element).x;
+        lastMouseY = flowGetMousePosition(event, element).y;
+    }, {passive: false});
+    document.addEventListener('touchend', function () { mouseDown = false; });
+    element.addEventListener('touchmove', function (event) {
+        if (mouseDown) {
+            var mx = flowGetMousePosition(event, element).x;
+            var my = flowGetMousePosition(event, element).y;
+            azimuth += (mx - lastMouseX) * FLOW_CAMERA_SENSITIVITY;
+            elevation += (my - lastMouseY) * FLOW_CAMERA_SENSITIVITY;
+            if (elevation < FLOW_MIN_ELEVATION) elevation = FLOW_MIN_ELEVATION;
+            else if (elevation > FLOW_MAX_ELEVATION) elevation = FLOW_MAX_ELEVATION;
+            recomputeViewMatrix();
+            lastMouseX = mx; lastMouseY = my;
+            element.style.cursor = 'grabbing';
+        } else {
+            element.style.cursor = 'grab';
+        }
+    }, {passive: false});
     recomputeViewMatrix();
 };
 
