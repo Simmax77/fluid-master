@@ -80,22 +80,6 @@ var FlowHuePicker = function (canvas, changeCallback) {
         if (mousePressed) onChange(event);
     });
 
-    canvas.addEventListener('touchstart', function (event) {
-        var mouseX = flowGetMousePosition(event, canvas).x;
-        var mouseY = flowGetMousePosition(event, canvas).y;
-        var xDistance = canvas.width / 2 - mouseX;
-        var yDistance = canvas.height / 2 - mouseY;
-        var distance = Math.sqrt(xDistance * xDistance + yDistance * yDistance);
-        if (distance < FLOW_HUE_OUTER_RADIUS) {
-            mousePressed = true;
-            onChange(event);
-        }
-    }, {passive: false});
-    document.addEventListener('touchend', function () { mousePressed = false; });
-    document.addEventListener('touchmove', function (event) {
-        if (mousePressed) onChange(event);
-    }, {passive: false});
-
     var onChange = function (event) {
         var mouseX = flowGetMousePosition(event, canvas).x;
         var mouseY = flowGetMousePosition(event, canvas).y;
@@ -147,15 +131,6 @@ var FlowSlider = function (element, min, max, initialValue, changeCallback) {
     document.addEventListener('mousemove', function (event) {
         if (mousePressed) onChange(event);
     });
-
-    div.addEventListener('touchstart', function (event) {
-        mousePressed = true;
-        onChange(event);
-    }, {passive: false});
-    document.addEventListener('touchend', function () { mousePressed = false; });
-    document.addEventListener('touchmove', function (event) {
-        if (mousePressed) onChange(event);
-    }, {passive: false});
 
     var onChange = function (event) {
         var mouseX = flowGetMousePosition(event, div).x;

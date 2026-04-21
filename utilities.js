@@ -7,18 +7,9 @@ var Utilities = {
 
     getMousePosition: function (event, element) {
         var boundingRect = element.getBoundingClientRect();
-        var clientX = event.clientX;
-        var clientY = event.clientY;
-        if (event.touches && event.touches.length > 0) {
-            clientX = event.touches[0].clientX;
-            clientY = event.touches[0].clientY;
-        } else if (event.changedTouches && event.changedTouches.length > 0) {
-            clientX = event.changedTouches[0].clientX;
-            clientY = event.changedTouches[0].clientY;
-        }
         return {
-            x: clientX - boundingRect.left,
-            y: clientY - boundingRect.top
+            x: event.clientX - boundingRect.left,
+            y: event.clientY - boundingRect.top
         };
     },
 
@@ -311,63 +302,3 @@ var Utilities = {
     },
 }
 
-
-// Mobile Menu Collapse Logic
-(function() {
-    function initMobileMenus() {
-        var uis = [document.getElementById('ui'), document.getElementById('right-bar')].filter(Boolean);
-        uis.forEach(function(ui) {
-            if (!ui.querySelector('.mobile-toggle-btn')) {
-                var btn = document.createElement('button');
-                btn.className = 'mobile-toggle-btn action-btn';
-                btn.style.cssText = 'display: none; width: 100%; margin-bottom: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 6px; color: #fff; font-weight: bold; cursor: pointer; text-align: center;';
-                btn.textContent = '☰ Toggle Menu';
-                
-                var contentWrap = document.createElement('div');
-                contentWrap.className = 'mobile-collapsible-content';
-                contentWrap.style.cssText = 'display: flex; flex-direction: inherit; gap: inherit; width: inherit; transition: opacity 0.3s;';
-                
-                while(ui.firstChild) {
-                    contentWrap.appendChild(ui.firstChild);
-                }
-                
-                ui.appendChild(btn);
-                ui.appendChild(contentWrap);
-
-                btn.addEventListener('click', function() {
-                    var isExpanded = contentWrap.style.display !== 'none';
-                    contentWrap.style.display = isExpanded ? 'none' : 'flex';
-                });
-                
-                var checkMobile = function() {
-                    if (window.innerWidth <= 768) {
-                        btn.style.display = 'block';
-                        if (contentWrap.getAttribute('data-mobile-init') !== 'true') {
-                            contentWrap.style.display = 'none';
-                            contentWrap.setAttribute('data-mobile-init', 'true');
-                        }
-                    } else {
-                        btn.style.display = 'none';
-                        contentWrap.style.display = 'flex';
-                        contentWrap.removeAttribute('data-mobile-init');
-                    }
-                };
-                checkMobile();
-                window.addEventListener('resize', checkMobile);
-            }
-        });
-    }
-
-    var observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.addedNodes.length) {
-                initMobileMenus();
-            }
-        });
-    });
-    
-    document.addEventListener('DOMContentLoaded', function() {
-        initMobileMenus();
-        observer.observe(document.body, { childList: true, subtree: true });
-    });
-})();

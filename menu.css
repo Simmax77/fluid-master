@@ -201,22 +201,9 @@ body {
     .menu-cards {
         flex-direction: column;
         align-items: center;
-        gap: 20px;
     }
     .menu-card {
-        width: 260px;
-        height: 300px;
-        padding: 24px 20px;
-        gap: 16px;
-    }
-    .card-icon {
-        font-size: 48px;
-    }
-    .card-title {
-        font-size: 18px;
-    }
-    .card-description {
-        font-size: 12px;
-        max-width: 220px;
+        width: 300px;
+        height: 340px;
     }
 }

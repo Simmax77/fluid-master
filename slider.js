@@ -37,21 +37,6 @@ var Slider = (function () {
             }
         }).bind(this));
 
-        this.div.addEventListener('touchstart', (function (event) {
-            this.mousePressed = true;
-            this.onChange(event);
-        }).bind(this), {passive: false});
-
-        document.addEventListener('touchend', (function (event) {
-            this.mousePressed = false;
-        }).bind(this));
-
-        document.addEventListener('touchmove', (function (event) {
-            if (this.mousePressed) {
-                this.onChange(event);
-            }
-        }).bind(this), {passive: false});
-
     };
 
     Slider.prototype.redraw = function () {
